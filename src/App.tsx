@@ -20,19 +20,21 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // fetchWishesをuseEffect外に出す
+  const fetchWishes = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('wishes')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      setWishes(data);
+    }
+    setLoading(false);
+  };
+
   // Supabaseからwishesを取得
   useEffect(() => {
-    const fetchWishes = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('wishes')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        setWishes(data);
-      }
-      setLoading(false);
-    };
     fetchWishes();
 
     // リアルタイム購読（オプション）
@@ -57,6 +59,8 @@ function App() {
       } else {
         setCurrentUser(author);
         setShowForm(false);
+        // ここで明示的に再取得
+        fetchWishes();
       }
     } catch (e) {
       console.error('Supabase insert exception:', e);
@@ -156,7 +160,7 @@ function App() {
       </div>
 
       {/* Custom animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in-up {
           from {
             opacity: 0;
