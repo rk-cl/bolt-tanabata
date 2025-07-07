@@ -4,6 +4,7 @@ import { CLKunCharacter } from './components/CLKunCharacter';
 import { WishForm } from './components/WishForm';
 import { WishGallery } from './components/WishGallery';
 import { Star, Sparkles } from 'lucide-react';
+import { supabase } from './supabaseClient';
 
 interface Wish {
   id: string;
@@ -17,36 +18,53 @@ function App() {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [currentUser, setCurrentUser] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Load wishes from localStorage on component mount
+  // Supabaseからwishesを取得
   useEffect(() => {
-    const savedWishes = localStorage.getItem('tanabata-wishes');
-    if (savedWishes) {
-      setWishes(JSON.parse(savedWishes));
-    }
+    const fetchWishes = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('wishes')
+        .select('*')
+        .order('timestamp', { ascending: false });
+      if (!error && data) {
+        setWishes(data);
+      }
+      setLoading(false);
+    };
+    fetchWishes();
+
+    // リアルタイム購読（オプション）
+    const subscription = supabase
+      .channel('wishes-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, () => {
+        fetchWishes();
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
-  // Save wishes to localStorage whenever wishes change
-  useEffect(() => {
-    localStorage.setItem('tanabata-wishes', JSON.stringify(wishes));
-  }, [wishes]);
-
-  const handleAddWish = (wish: string, author: string, color: string) => {
-    const newWish: Wish = {
-      id: Date.now().toString(),
+  const handleAddWish = async (wish: string, author: string, color: string) => {
+    const newWish = {
       wish,
       author,
       color,
       timestamp: Date.now(),
     };
-    
-    setWishes(prev => [newWish, ...prev]);
-    setCurrentUser(author);
-    setShowForm(false);
+    const { error } = await supabase.from('wishes').insert([newWish]);
+    if (!error) {
+      setCurrentUser(author);
+      setShowForm(false);
+      // fetchWishes()はリアルタイム購読で自動反映
+    }
   };
 
-  const handleRemoveWish = (id: string) => {
-    setWishes(prev => prev.filter(wish => wish.id !== id));
+  const handleRemoveWish = async (id: string) => {
+    await supabase.from('wishes').delete().eq('id', id);
+    // fetchWishes()はリアルタイム購読で自動反映
   };
 
   return (
@@ -102,11 +120,15 @@ function App() {
               </div>
 
               {/* Wishes Gallery */}
-              <WishGallery 
-                wishes={wishes} 
-                onRemoveWish={handleRemoveWish}
-                currentUser={currentUser}
-              />
+              {loading ? (
+                <div className="text-center text-white/70 py-12">読み込み中...</div>
+              ) : (
+                <WishGallery 
+                  wishes={wishes} 
+                  onRemoveWish={handleRemoveWish}
+                  currentUser={currentUser}
+                />
+              )}
             </div>
           ) : (
             <div className="max-w-2xl mx-auto">
