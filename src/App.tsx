@@ -54,13 +54,12 @@ function App() {
       color,
     };
     const { error, data } = await supabase.from('wishes').insert([newWish]);
+    console.log('Supabase insert result:', { error, data });
     if (error) {
-      console.error('Supabase insert error:', error);
       alert('書き込みに失敗しました: ' + error.message);
     } else {
       setCurrentUser(author);
       setShowForm(false);
-      // fetchWishes()はリアルタイム購読で自動反映
     }
   };
 
