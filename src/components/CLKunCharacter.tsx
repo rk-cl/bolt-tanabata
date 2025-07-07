@@ -1,5 +1,5 @@
 import React from 'react';
-import CLkunImage from './src/assets/CLkun.png';
+import CLkunImage from 'public/assets/CLkun.png';
 
 export const CLKunCharacter: React.FC = () => {
   return (
