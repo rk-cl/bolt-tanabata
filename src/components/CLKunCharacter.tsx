@@ -1,12 +1,12 @@
 import React from 'react';
-import CLkunImage from 'public/assets/CLkun.png';
+// import CLkunImage from 'public/assets/CLkun.png';
 
 export const CLKunCharacter: React.FC = () => {
   return (
     <div className="flex justify-center mb-8">
       <div className="relative group">
         <img
-          src={CLkunImage}
+          src="/assets/CLkun.png"
           alt="CLくん"
           className="w-24 h-24 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
         />
