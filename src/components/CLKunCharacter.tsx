@@ -1,5 +1,6 @@
 import React from 'react';
 // import CLkunImage from 'public/assets/CLkun.png';
+// supabaseのimportは一時的に削除（このファイル内でsupabase未使用のため）
 
 export const CLKunCharacter: React.FC = () => {
   return (
