@@ -5,7 +5,6 @@ import { WishForm } from './components/WishForm';
 import { WishGallery } from './components/WishGallery';
 import { Star, Sparkles } from 'lucide-react';
 import { supabase } from './supabaseClient';
-import { createClient } from '@supabase/supabase-js';
 
 interface Wish {
   id: string;
