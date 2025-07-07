@@ -27,7 +27,7 @@ function App() {
       const { data, error } = await supabase
         .from('wishes')
         .select('*')
-        .order('timestamp', { ascending: false });
+        .order('created_at', { ascending: false });
       if (!error && data) {
         setWishes(data);
       }
@@ -52,10 +52,12 @@ function App() {
       wish,
       author,
       color,
-      timestamp: Date.now(),
     };
-    const { error } = await supabase.from('wishes').insert([newWish]);
-    if (!error) {
+    const { error, data } = await supabase.from('wishes').insert([newWish]);
+    if (error) {
+      console.error('Supabase insert error:', error);
+      alert('書き込みに失敗しました: ' + error.message);
+    } else {
       setCurrentUser(author);
       setShowForm(false);
       // fetchWishes()はリアルタイム購読で自動反映
