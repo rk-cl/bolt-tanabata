@@ -48,18 +48,19 @@ function App() {
   }, []);
 
   const handleAddWish = async (wish: string, author: string, color: string) => {
-    const newWish = {
-      wish,
-      author,
-      color,
-    };
-    const { error, data } = await supabase.from('wishes').insert([newWish]);
-    console.log('Supabase insert result:', { error, data });
-    if (error) {
-      alert('書き込みに失敗しました: ' + error.message);
-    } else {
-      setCurrentUser(author);
-      setShowForm(false);
+    const newWish = { wish, author, color };
+    try {
+      const { error, data, status, statusText } = await supabase.from('wishes').insert([newWish]);
+      console.log('Supabase insert result:', { error, data, status, statusText });
+      if (error) {
+        alert('書き込みに失敗しました: ' + error.message);
+      } else {
+        setCurrentUser(author);
+        setShowForm(false);
+      }
+    } catch (e) {
+      console.error('Supabase insert exception:', e);
+      alert('書き込み時に例外が発生しました: ' + e);
     }
   };
 
